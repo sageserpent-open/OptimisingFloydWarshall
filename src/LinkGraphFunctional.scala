@@ -1,25 +1,26 @@
 class LinkGraphFunctional private (
     val numberOfNodes: Int,
-    val graph: IndexedSeq[IndexedSeq[Int]]) {
+    val graph: Map[(Int, Int), Int]) {
   
   def floydWarshall = {
     //println("Calculating distances...")
     (0 until numberOfNodes).foldLeft(graph)(floydWarshallIteration _)
       }
   
-  def floydWarshallIteration(graph: IndexedSeq[IndexedSeq[Int]], k: Int) = {
+  def floydWarshallIteration(graph: Map[(Int, Int), Int], k: Int) = {
     //println(s"\r$k")
-    for (i <- 0 until numberOfNodes) yield {
-      for (j <- 0 until numberOfNodes) yield {
-        val ij = graph(i)(j)
-        val ik = graph(i)(k)
-        val kj = graph(k)(j)
+
+    val changesToGraph =
+      for {
+        i <- 0 until numberOfNodes
+        j <- 0 until numberOfNodes
+        ij = graph(i -> j)
+        ik = graph(i -> k)
+        kj = graph(k -> j)
         if (i != j && ik * kj != 0 && (ij == 0 || ik + kj < ij))
-          ik + kj
-        else
-          ij
-      }
-    }
+      } yield (i -> j) -> (ik + kj)
+      
+    graph ++ changesToGraph
   }
 }
 
@@ -31,19 +32,22 @@ object LinkGraphFunctional {
     val numberOfNodes = random.nextInt(500)
     println("Number of nodes: " + numberOfNodes + ".")
 
-    def generateGraph(nodesLeftToDo: Int): List[IndexedSeq[Int]] = {
+        def generateGraph(nodesLeftToDo: Int): IndexedSeq[((Int, Int), Int)] = {
       // This is horrible, I know: code written in a hurry.
 
       if (0 == nodesLeftToDo) {
-        List.empty
+        IndexedSeq.empty
       } else {
         val weightsForCurrentNode = ArraySeq.fill(numberOfNodes) { (if (random.nextBoolean) 0 else 1 + random.nextInt(Byte.MaxValue)) }
         // The zeroes make breaks in the graph - so that the transitive closure is guaranteed  to be different from the original graph.
+        
+        val contributionForCurrentNode =
+    		for (j <- 0 until numberOfNodes) yield (numberOfNodes - nodesLeftToDo -> j) -> weightsForCurrentNode(j)
 
-        weightsForCurrentNode :: generateGraph(nodesLeftToDo - 1)
+        contributionForCurrentNode ++ generateGraph(nodesLeftToDo - 1)
       }
     }
-    new LinkGraphFunctional(numberOfNodes, generateGraph(numberOfNodes).toIndexedSeq)
+    new LinkGraphFunctional(numberOfNodes, scala.collection.immutable.HashMap(generateGraph(numberOfNodes): _*))
   }
 }
 
@@ -70,7 +74,7 @@ object Driver extends scala.testing.Benchmark {
       val result = 
           (for (i <- 0 until sut.numberOfNodes;
 	            j <- 0 until sut.numberOfNodes)
-        	  yield transitiveClosure(i)(j)).hashCode
+        	  yield transitiveClosure(i, j)).hashCode
 
       println (result)
   }
