@@ -1,26 +1,24 @@
 class LinkGraphFunctional private (
     val numberOfNodes: Int,
-    val graph: Map[(Int, Int), Int]) {
+    val graph: Vector[Vector[Int]]) {
   
   def floydWarshall = {
     //println("Calculating distances...")
     (0 until numberOfNodes).foldLeft(graph)(floydWarshallIteration _)
       }
   
-  def floydWarshallIteration(graph: Map[(Int, Int), Int], k: Int) = {
+  def floydWarshallIteration(graph: Vector[Vector[Int]], k: Int) = {
     //println(s"\r$k")
-
-    val changesToGraph =
-      for {
-        i <- 0 until numberOfNodes
-        j <- 0 until numberOfNodes
-        ij = graph(i -> j)
-        ik = graph(i -> k)
-        kj = graph(k -> j)
-        if (i != j && ik * kj != 0 && (ij == 0 || ik + kj < ij))
-      } yield (i -> j) -> (ik + kj)
-      
-    graph ++ changesToGraph
+    
+    Vector.tabulate(numberOfNodes, numberOfNodes) ((i, j) => {
+      val ij = graph(i)(j)
+      val ik = graph(i)(k)
+      val kj = graph(k)(j)
+      if (i != j && ik * kj != 0 && (ij == 0 || ik + kj < ij))
+        ik + kj
+      else
+        ij
+    })
   }
 }
 
@@ -32,22 +30,10 @@ object LinkGraphFunctional {
     val numberOfNodes = random.nextInt(500)
     println("Number of nodes: " + numberOfNodes + ".")
 
-        def generateGraph(nodesLeftToDo: Int): IndexedSeq[((Int, Int), Int)] = {
-      // This is horrible, I know: code written in a hurry.
-
-      if (0 == nodesLeftToDo) {
-        IndexedSeq.empty
-      } else {
-        val weightsForCurrentNode = ArraySeq.fill(numberOfNodes) { (if (random.nextBoolean) 0 else 1 + random.nextInt(Byte.MaxValue)) }
-        // The zeroes make breaks in the graph - so that the transitive closure is guaranteed  to be different from the original graph.
-        
-        val contributionForCurrentNode =
-    		for (j <- 0 until numberOfNodes) yield (numberOfNodes - nodesLeftToDo -> j) -> weightsForCurrentNode(j)
-
-        contributionForCurrentNode ++ generateGraph(nodesLeftToDo - 1)
-      }
-    }
-    new LinkGraphFunctional(numberOfNodes, scala.collection.immutable.HashMap(generateGraph(numberOfNodes): _*))
+    def generateGraph(nodesLeftToDo: Int): Vector[Vector[Int]] =
+      Vector.tabulate(numberOfNodes, numberOfNodes) ((_,_) => if (random.nextBoolean) 0 else 1 + random.nextInt(Byte.MaxValue))
+      
+    new LinkGraphFunctional(numberOfNodes, generateGraph(numberOfNodes))
   }
 }
 
@@ -74,7 +60,7 @@ object Driver extends scala.testing.Benchmark {
       val result = 
           (for (i <- 0 until sut.numberOfNodes;
 	            j <- 0 until sut.numberOfNodes)
-        	  yield transitiveClosure(i, j)).hashCode
+        	  yield transitiveClosure(i)(j)).hashCode
 
       println (result)
   }
