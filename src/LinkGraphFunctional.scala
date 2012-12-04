@@ -5,7 +5,7 @@ class LinkGraphFunctional private (
   def floydWarshall = {
     //println("Calculating distances...")
     (0 until numberOfNodes).foldLeft(graph)(floydWarshallIteration _)
-  }
+      }
   
   def floydWarshallIteration(graph: IndexedSeq[IndexedSeq[Byte]], k: Int) = {
     //println(s"\r$k")
@@ -66,6 +66,12 @@ object Driver extends scala.testing.Benchmark {
   }
   
   def run = {
-    sut.floydWarshall // I need to have transitive closure.
+      val transitiveClosure = sut.floydWarshall // I need to have transitive closure.
+      val result = 
+          (for (i <- 0 until sut.numberOfNodes;
+	            j <- 0 until sut.numberOfNodes)
+        	  yield transitiveClosure(i)(j)).hashCode
+
+      println (result)
   }
 }
