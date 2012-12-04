@@ -48,16 +48,24 @@ object LinkGraphFunctional {
 }
 
 object Driver extends scala.testing.Benchmark {
-  def run = {
-    val random = new Random(8723)
-    for (pass <- 0 until 10) {
-      println("Pass: " + pass + ".")
-      val graph = LinkGraphFunctional(random)
-      graph.floydWarshall // I need to have transitive closure.
-    }
-
+  val random = new Random(8723)
+  var sut: LinkGraphFunctional = null
+  var pass = 0
+  
+  override def setUp() = {
+    println("Pass: " + pass + ".")
+    sut = LinkGraphFunctional(random)
+  }
+  
+  override def tearDown() = {
     println("***** Finished *****")
     println()
     println()
+    
+    pass = pass + 1
+  }
+  
+  def run = {
+    sut.floydWarshall // I need to have transitive closure.
   }
 }
