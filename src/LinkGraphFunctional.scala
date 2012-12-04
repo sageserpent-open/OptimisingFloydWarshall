@@ -1,16 +1,16 @@
 class LinkGraphFunctional private (
     val numberOfNodes: Int,
-    val graph: Vector[Int]) {
+    val graph: Array[Int]) {
   
   def floydWarshall = {
     //println("Calculating distances...")
     (0 until numberOfNodes).foldLeft(graph)(floydWarshallIteration _)
       }
   
-  def floydWarshallIteration(graph: Vector[Int], k: Int) = {
+  def floydWarshallIteration(graph: Array[Int], k: Int) = {
     //println(s"\r$k")
     
-    Vector.tabulate(numberOfNodes * numberOfNodes) (l => {
+    Array.tabulate(numberOfNodes * numberOfNodes) (l => {
       val i = l / numberOfNodes
       val j = l % numberOfNodes
       val ij = graph(l)
@@ -32,8 +32,8 @@ object LinkGraphFunctional {
     val numberOfNodes = random.nextInt(500)
     println("Number of nodes: " + numberOfNodes + ".")
 
-    def generateGraph(nodesLeftToDo: Int): Vector[Int] =
-      Vector.tabulate(numberOfNodes * numberOfNodes) (_ => if (random.nextBoolean) 0 else 1 + random.nextInt(Byte.MaxValue))
+    def generateGraph(nodesLeftToDo: Int): Array[Int] =
+      Array.tabulate(numberOfNodes * numberOfNodes) (_ => if (random.nextBoolean) 0 else 1 + random.nextInt(Byte.MaxValue))
       
     new LinkGraphFunctional(numberOfNodes, generateGraph(numberOfNodes))
   }
