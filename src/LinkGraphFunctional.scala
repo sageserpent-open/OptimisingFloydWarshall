@@ -4,7 +4,7 @@ class LinkGraphFunctional private (
   
   def floydWarshall = {
     //println("Calculating distances...")
-    (1 until numberOfNodes).foldLeft(graph)(floydWarshallIteration _)
+    (0 until numberOfNodes).foldLeft(graph)(floydWarshallIteration _)
   }
   
   def floydWarshallIteration(graph: IndexedSeq[IndexedSeq[Byte]], k: Int) = {
