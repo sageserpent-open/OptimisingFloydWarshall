@@ -1,19 +1,21 @@
 class LinkGraphFunctional private (
     val numberOfNodes: Int,
-    val graph: Vector[Vector[Int]]) {
+    val graph: Vector[Int]) {
   
   def floydWarshall = {
     //println("Calculating distances...")
     (0 until numberOfNodes).foldLeft(graph)(floydWarshallIteration _)
       }
   
-  def floydWarshallIteration(graph: Vector[Vector[Int]], k: Int) = {
+  def floydWarshallIteration(graph: Vector[Int], k: Int) = {
     //println(s"\r$k")
     
-    Vector.tabulate(numberOfNodes, numberOfNodes) ((i, j) => {
-      val ij = graph(i)(j)
-      val ik = graph(i)(k)
-      val kj = graph(k)(j)
+    Vector.tabulate(numberOfNodes * numberOfNodes) (l => {
+      val i = l / numberOfNodes
+      val j = l % numberOfNodes
+      val ij = graph(l)
+      val ik = graph(i * numberOfNodes + k)
+      val kj = graph(k * numberOfNodes + j)
       if (i != j && ik * kj != 0 && (ij == 0 || ik + kj < ij))
         ik + kj
       else
@@ -30,8 +32,8 @@ object LinkGraphFunctional {
     val numberOfNodes = random.nextInt(500)
     println("Number of nodes: " + numberOfNodes + ".")
 
-    def generateGraph(nodesLeftToDo: Int): Vector[Vector[Int]] =
-      Vector.tabulate(numberOfNodes, numberOfNodes) ((_,_) => if (random.nextBoolean) 0 else 1 + random.nextInt(Byte.MaxValue))
+    def generateGraph(nodesLeftToDo: Int): Vector[Int] =
+      Vector.tabulate(numberOfNodes * numberOfNodes) (_ => if (random.nextBoolean) 0 else 1 + random.nextInt(Byte.MaxValue))
       
     new LinkGraphFunctional(numberOfNodes, generateGraph(numberOfNodes))
   }
@@ -60,7 +62,7 @@ object Driver extends scala.testing.Benchmark {
       val result = 
           (for (i <- 0 until sut.numberOfNodes;
 	            j <- 0 until sut.numberOfNodes)
-        	  yield transitiveClosure(i)(j)).hashCode
+        	  yield transitiveClosure(i * sut.numberOfNodes + j)).hashCode
 
       println (result)
   }
