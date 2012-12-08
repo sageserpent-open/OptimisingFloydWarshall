@@ -1,16 +1,18 @@
+import scala.collection.parallel.immutable.ParVector
+
 class LinkGraphFunctional private (
     val numberOfNodes: Int,
-    val graph: Vector[Int]) {
+    val graph: ParVector[Int]) {
   
   def floydWarshall = {
     //println("Calculating distances...")
     (0 until numberOfNodes).foldLeft(graph)(floydWarshallIteration _)
       }
   
-  def floydWarshallIteration(graph: Vector[Int], k: Int) = {
+  def floydWarshallIteration(graph: ParVector[Int], k: Int) = {
     //println(s"\r$k")
     
-    Vector.tabulate(numberOfNodes * numberOfNodes) (l => {
+      ParVector.tabulate(numberOfNodes * numberOfNodes) (l => {
       val i = l / numberOfNodes
       val j = l % numberOfNodes
       val ij = graph(l)
@@ -20,7 +22,7 @@ class LinkGraphFunctional private (
         ik + kj
       else
         ij
-    })
+    }))
   }
 }
 
@@ -32,8 +34,10 @@ object LinkGraphFunctional {
     val numberOfNodes = random.nextInt(500)
     println("Number of nodes: " + numberOfNodes + ".")
 
-    def generateGraph(nodesLeftToDo: Int): Vector[Int] =
+    def generateGraph(nodesLeftToDo: Int): ParVector[Int] =
       Vector.tabulate(numberOfNodes * numberOfNodes) (_ => if (random.nextBoolean) 0 else 1 + random.nextInt(Byte.MaxValue))
+      sequentialForm.par
+    }
       
     new LinkGraphFunctional(numberOfNodes, generateGraph(numberOfNodes))
   }
