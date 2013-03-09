@@ -22,7 +22,7 @@ class LinkGraphFunctional private (
         ik + kj
       else
         ij
-    }))
+    })
   }
 }
 
@@ -34,8 +34,8 @@ object LinkGraphFunctional {
     val numberOfNodes = random.nextInt(500)
     println("Number of nodes: " + numberOfNodes + ".")
 
-    def generateGraph(nodesLeftToDo: Int): ParVector[Int] =
-      Vector.tabulate(numberOfNodes * numberOfNodes) (_ => if (random.nextBoolean) 0 else 1 + random.nextInt(Byte.MaxValue))
+    def generateGraph(nodesLeftToDo: Int): ParVector[Int] = {
+      val sequentialForm = Vector.tabulate(numberOfNodes * numberOfNodes) (_ => if (random.nextBoolean) 0 else 1 + random.nextInt(Byte.MaxValue))
       sequentialForm.par
     }
       
